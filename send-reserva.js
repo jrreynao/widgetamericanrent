@@ -19,6 +19,11 @@ export default async function handler(req, res) {
   const { form } = req.body;
   if (!form) return res.status(400).json({error: 'Faltan datos'});
 
+  // Configuracion de correo/administrador
+  const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@americanrentacar.ar';
+  const FROM_NAME = process.env.MAIL_FROM_NAME || 'American Rent a Car';
+  const FROM_EMAIL = process.env.MAIL_FROM || ADMIN_EMAIL;
+
   // Configurar transporter de nodemailer
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'mail.isracarent.com',
@@ -223,14 +228,14 @@ export default async function handler(req, res) {
 
   try {
     const userResult = await transporter.sendMail({
-      from: 'IsraCar Rent <admin@isracarent.com>',
+  from: `${FROM_NAME} <${FROM_EMAIL}>`,
       to: vars.customer_email,
       subject: '¡Recibimos tu solicitud de cotización en IsraCar Rent! 🎉',
       html: fillTemplate(htmlCliente, vars)
     });
     const adminResult = await transporter.sendMail({
-      from: 'IsraCar Rent <admin@isracarent.com>',
-      to: 'admin@isracarent.com',
+  from: `${FROM_NAME} <${FROM_EMAIL}>`,
+  to: ADMIN_EMAIL,
       subject: `Nueva solicitud de cotización de ${vars.customer_full_name}`,
       html: fillTemplate(htmlAdmin, vars)
     });
