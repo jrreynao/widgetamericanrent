@@ -76,10 +76,10 @@ export default async function handler(req, res) {
   const dni_number = form.datos?.dni || '';
   const customer_note = form.datos?.nota || '';
   // Categoría seleccionada y datos derivados (nombre amigable, imagen representativa y rango de precios)
-  const categoriaId = form.vehiculo?.categoria || form.vehiculo?.categoriaId || '';
+  const categoriaId = String(form.vehiculo?.categoria || form.vehiculo?.categoriaId || '').trim();
   const categoriaLabelMap = { '1': 'Vehículo Chico', '2': 'Vehículo Mediano', '3': 'Vehículo Grande' };
-  const categoriaNombre = categoriaLabelMap[categoriaId] || (allCategorias.find(c => c.id === categoriaId)?.nombre || 'Categoría no especificada');
-  const vehsCategoria = Array.isArray(allVehiculos) ? allVehiculos.filter(v => v.categoriaId === categoriaId) : [];
+  const categoriaNombre = categoriaLabelMap[categoriaId] || (allCategorias.find(c => String(c.id) === categoriaId)?.nombre || 'Categoría no especificada');
+  const vehsCategoria = Array.isArray(allVehiculos) ? allVehiculos.filter(v => String(v.categoriaId) === categoriaId) : [];
   const minPrecio = vehsCategoria.length ? Math.min(...vehsCategoria.map(v => parseInt(v.precio) || 0)) : 0;
   const maxPrecio = vehsCategoria.length ? Math.max(...vehsCategoria.map(v => parseInt(v.precio) || 0)) : 0;
   const vehiculoRepresentativo = vehsCategoria.find(v => (parseInt(v.precio) || 0) === minPrecio) || vehsCategoria[0];

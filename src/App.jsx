@@ -25,18 +25,19 @@ function App() {
   };
 
   // Paso 2: Vehículo
-  const handleVehiculoNext = () => {
-    // Asegura que el vehículo seleccionado tenga el id correcto
+  const handleVehiculoNext = (payload) => {
+    // Guardar categoría desde el selector si viene en el payload
     setForm(f => {
-      // Si el vehículo seleccionado es un objeto de la lista, lo dejamos igual
-      // Si es solo un id, buscamos el objeto completo
-      if (f.vehiculo && f.vehiculo.id) {
-        return f;
+      const nextVeh = { ...f.vehiculo };
+      if (payload && payload.categoria) {
+        nextVeh.categoria = payload.categoria;
       }
-      // Si solo hay un id, buscar el objeto
-      const v = vehiculos.find(v => v.id === f.vehiculo);
-      if (v) return { ...f, vehiculo: v };
-      return f;
+      // Si el valor en vehiculo es un id string, resolver al objeto
+      if (typeof f.vehiculo === 'string') {
+        const v = vehiculos.find(v => v.id === f.vehiculo);
+        if (v) return { ...f, vehiculo: { ...v, ...nextVeh } };
+      }
+      return { ...f, vehiculo: nextVeh };
     });
     setStep(3);
   };
