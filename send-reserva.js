@@ -60,7 +60,19 @@ export default async function handler(req, res) {
   const booking_id = Math.floor(Math.random()*1000000);
   const customer_full_name = form.datos?.nombre || '';
   const customer_email = form.datos?.email || '';
-  const customer_phone = form.datos?.telefono || '';
+  // Normalizar teléfono para mostrar y para WhatsApp
+  const raw_phone = form.datos?.telefono || '';
+  // Quitar textos como "+54 Argentina" y caracteres no numéricos
+  let phone_digits = String(raw_phone).replace(/\+?\s*54\s*argentina/gi, '').replace(/[^0-9]/g, '');
+  // Si empieza con 00, quitarlo
+  if (phone_digits.startsWith('00')) phone_digits = phone_digits.slice(2);
+  // Preparar versión mostrable con prefijo +54 si falta y parece un número argentino sin prefijo
+  let customer_phone = phone_digits;
+  if (/^\d{10,11}$/.test(customer_phone) && !customer_phone.startsWith('54')) {
+    customer_phone = '+54 ' + customer_phone;
+  } else if (customer_phone.startsWith('54')) {
+    customer_phone = '+' + customer_phone;
+  }
   const dni_number = form.datos?.dni || '';
   const customer_note = form.datos?.nota || '';
   // Categoría seleccionada y datos derivados (nombre amigable, imagen representativa y rango de precios)
@@ -142,17 +154,16 @@ export default async function handler(req, res) {
     : '';
 
   const customer_whatsapp_link = (() => {
-    if (!form.datos?.telefono) return '';
-    let tel = String(form.datos.telefono).replace(/[^0-9]/g, '');
-    if (tel.startsWith('00')) tel = tel.slice(2);
-    if (tel.startsWith('54')) {
-      if (tel.startsWith('549')) {
-        return tel;
-      } else if (tel.length === 12 && tel.startsWith('54')) {
-        return tel;
-      } else if (tel.length === 11 && tel.startsWith('54')) {
-        return '549' + tel.slice(2);
-      }
+    if (!phone_digits) return '';
+    let tel = phone_digits;
+    // Evitar duplicar 54: si ya empieza con 54 o 549, mantener; si no, agregar 54
+    if (!tel.startsWith('54')) {
+      tel = '54' + tel;
+    }
+    // Asegurar formato móvil con 549 cuando corresponde (AR mobile rule heuristic)
+    if (tel.startsWith('54') && !tel.startsWith('549')) {
+      // Insert a '9' after the country code for mobile if length suggests missing it
+      tel = '549' + tel.slice(2);
     }
     return tel;
   })();

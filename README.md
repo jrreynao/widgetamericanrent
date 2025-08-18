@@ -7,6 +7,18 @@ Endpoints used:
 - `GET /healthz` for health checks
 - `POST /send-reserva` for sending the reservation
 
+## Email templates and sending
+
+- The frontend loads HTML templates from `public/email_templates` and can include the filled HTML in the POST body as `htmlCliente` and `htmlAdmin`.
+- The backend prefers these request-provided HTML strings. If they are not provided, it fetches the templates from a public URL.
+- To make the backend fetch your own hosted templates (the ones built from `public/email_templates`), set the environment variable `FRONTEND_BASE` to the origin where the widget is hosted. Example:
+	- `FRONTEND_BASE=https://widget.americanrentacar.ar`
+- Mail-related environment variables:
+	- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`
+	- `ADMIN_EMAIL` (defaults to `admin@americanrentacar.ar`)
+	- `MAIL_FROM_NAME` (defaults to `American Rent a Car`)
+	- `MAIL_FROM` (defaults to `ADMIN_EMAIL`)
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

@@ -11,6 +11,9 @@
             </div>
             <!-- Title -->
             <h1 style="color:#0b3d91;font-size:1.6em;margin:28px 0 0 0;font-weight:900;text-align:center;letter-spacing:0.5px">Hola %customer_full_name%,</h1>
+            <div style="color:#0b3d91;font-size:1.05em;text-align:center;margin:10px 0 0 0">
+              Orden <span style="color:#101828">%booking_id%</span>
+            </div>
             <!-- Content -->
             <div style="margin:28px 0 18px 0;color:#4a5568;font-size:1.12em;line-height:1.7;text-align:center">
               ¡Gracias por elegir American Rent a Car! Estamos revisando tu solicitud y te confirmaremos disponibilidad y precio final para las fechas indicadas.<br><br>
@@ -26,7 +29,7 @@
               </div>
             </div>
             <!-- Reserva Details -->
-            <table style="background:#eef2ff;border-radius:14px;margin:0 0 24px 0;width:100%">
+      <table style="background:#eef2ff;border-radius:14px;margin:0 0 24px 0;width:100%">
               <tr>
                 <td style="padding:20px 18px;text-align:center;color:#101828;font-size:1.08em;line-height:1.7">
                   <h2 style="color:#0b3d91;font-size:1.18em;text-align:center;margin:0 0 12px 0;font-weight:800">Detalles de tu reserva</h2>
@@ -34,7 +37,8 @@
                     <b>Fecha de entrega:</b> %appointment_date%<br>
                     <b>Hora de entrega:</b> %hora_entregadevehiculo%<br>
                     <b>Fecha de devolución:</b> %fechadev%<br>
-                    <b>Hora de devolución:</b> %hora_devolucionvehiculo%
+        <b>Hora de devolución:</b> %hora_devolucionvehiculo%<br>
+        <b>Cantidad de días:</b> %appointment_duration%
                   </p>
                   <!-- Lista de extras seleccionados -->
                   <div style="margin:12px 0 8px 0;text-align:center;font-size:1.05em">
@@ -56,7 +60,6 @@
             <!-- Payment logos -->
             <div style="text-align:center;margin-top:16px">
               <img src="https://americanrentacar.ar/wp-content/uploads/2025/06/Captura-de-pantalla-2025-05-13-165438-Photoroom.png" width="220" alt="Bancos" style="display:block;margin:0 auto 8px auto;border-radius:8px" />
-              <img src="https://americanrentacar.ar/wp-content/uploads/2025/06/Captura-de-pantalla-2025-05-13-165438-Photoroom.png" width="160" alt="Mercado Pago" style="display:block;margin:0 auto;border-radius:8px" />
             </div>
             <!-- Footer -->
             <div style="text-align:center;color:#667085;font-size:0.98em;border-top:1px solid #e0e6ed;padding-top:18px;margin-top:32px;line-height:1.6">
