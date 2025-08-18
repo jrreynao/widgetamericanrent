@@ -44,8 +44,18 @@ export default async function handler(req, res) {
     if (!res.ok) throw new Error(`No se pudo obtener la plantilla: ${url}`);
     return await res.text();
   }
-  const htmlCliente = await fetchTemplate('https://widget.isracarent.com/email_templates/correo_cliente.html');
-  const htmlAdmin = await fetchTemplate('https://widget.isracarent.com/email_templates/correo_admin.html');
+  // Si el front envía HTML listo, priorizarlo. Si no, usar plantillas públicas.
+  const FRONTEND_BASE = process.env.FRONTEND_BASE || '';
+  const clienteURL = FRONTEND_BASE
+    ? `${FRONTEND_BASE.replace(/\/$/, '')}/email_templates/correo_cliente.html`
+    : 'https://widget.isracarent.com/email_templates/correo_cliente.html';
+  const adminURL = FRONTEND_BASE
+    ? `${FRONTEND_BASE.replace(/\/$/, '')}/email_templates/correo_admin.html`
+    : 'https://widget.isracarent.com/email_templates/correo_admin.html';
+  const htmlClienteRaw = (req.body && req.body.htmlCliente) ? String(req.body.htmlCliente) : await fetchTemplate(clienteURL);
+  const htmlAdminRaw = (req.body && req.body.htmlAdmin) ? String(req.body.htmlAdmin) : await fetchTemplate(adminURL);
+  const htmlCliente = htmlClienteRaw;
+  const htmlAdmin = htmlAdminRaw;
 
   const booking_id = Math.floor(Math.random()*1000000);
   const customer_full_name = form.datos?.nombre || '';
@@ -228,15 +238,15 @@ export default async function handler(req, res) {
 
   try {
     const userResult = await transporter.sendMail({
-  from: `${FROM_NAME} <${FROM_EMAIL}>`,
+      from: `${FROM_NAME} <${FROM_EMAIL}>`,
       to: vars.customer_email,
-      subject: '¡Recibimos tu solicitud de cotización en IsraCar Rent! 🎉',
+      subject: '¡Recibimos tu solicitud en American Rent a Car! 🎉',
       html: fillTemplate(htmlCliente, vars)
     });
     const adminResult = await transporter.sendMail({
-  from: `${FROM_NAME} <${FROM_EMAIL}>`,
-  to: ADMIN_EMAIL,
-      subject: `Nueva solicitud de cotización de ${vars.customer_full_name}`,
+      from: `${FROM_NAME} <${FROM_EMAIL}>`,
+      to: ADMIN_EMAIL,
+      subject: `Nueva solicitud de cotización - American Rent a Car - ${vars.customer_full_name}`,
       html: fillTemplate(htmlAdmin, vars)
     });
     if (userResult.accepted.length && adminResult.accepted.length) {

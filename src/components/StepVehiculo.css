@@ -76,7 +76,7 @@
 }
 
 .vehiculo-input:focus {
-  border: 1.5px solid #ff6600;
+  border: 1.5px solid var(--wr-brand);
 }
 
  .vehiculo-card-flat {
@@ -109,8 +109,8 @@
   color: #222;
 }
 .vehiculo-input:focus {
-  border: 2px solid #ff6600;
-  box-shadow: 0 0 0 2px #ff660033;
+  border: 2px solid var(--wr-brand);
+  box-shadow: 0 0 0 2px var(--wr-brand-12a);
 }
 
 .vehiculo-nombre-flat {
@@ -149,7 +149,7 @@
 .vehiculo-precio-num-flat {
   font-size: 0.8rem;
   font-weight: 700;
-  color: #ff6600;
+  color: var(--wr-accent);
 }
 
 
@@ -177,7 +177,7 @@
   max-width: 100%;
  }
  .next-btn-flat {
-  background: linear-gradient(90deg, #ff6600 0%, #ff9900 100%);
+  background: var(--wr-brand);
   color: #fff;
  }
  .next-btn-flat:disabled {

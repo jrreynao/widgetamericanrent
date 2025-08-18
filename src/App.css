@@ -12,9 +12,13 @@
   --wr-bg: #fff;
   --wr-surface: #f5f6f8;
   /* Brand palette aligned with site */
-  --wr-brand: #2ecc71; /* primary green */
-  --wr-heading: #2e2a6e; /* deep indigo/purple for titles */
-  --wr-accent: #6b5cff; /* optional secondary accent (purple) */
+  --wr-brand: #0b3d91; /* primary navy */
+  --wr-heading: #0b3d91; /* headings in brand navy */
+  --wr-accent: #e31e24; /* accent red */
+  /* helpers */
+  --wr-brand-06a: #0b3d910f; /* ~6% alpha */
+  --wr-brand-12a: #0b3d9120; /* ~12% alpha */
+  --wr-accent-20a: #e31e2433; /* ~20% alpha */
 }
 
 /* Normalize base: transparent host wrappers; let parent control layout */
@@ -70,9 +74,6 @@
 .wr-btn:disabled { background: #eee; color: #aaa; cursor: not-allowed; box-shadow: none; }
 
 .step-fechas-btn,
-.next-btn-datos,
-.back-btn-datos,
-.next-btn-confirmar,
 .back-btn-confirmar { border-radius: 12px; font-weight: 700; }
 
 /* Compact mobile overrides */
@@ -224,7 +225,7 @@
   color: #fff;
   border: none;
   border-radius: 0.5em;
-  box-shadow: 0 2px 8px rgba(46,204,113,0.18);
+  box-shadow: 0 2px 8px rgba(11, 61, 145, 0.18);
   cursor: pointer;
   transition: background 0.2s;
 }
