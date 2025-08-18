@@ -169,30 +169,45 @@ export default async function handler(req, res) {
   })();
 
   const whatsapp_factura = (() => {
-    let factura = '🧾 *Solicitud de cotización*%0A';
-    factura += `Orden: ${booking_id}%0A`;
-    factura += `Nombre: ${customer_full_name}%0A`;
-    factura += `Categoría: ${service_name}%0A`;
-    factura += `Fechas: ${appointment_date} a ${fechadev}%0A`;
-    factura += 'Extras:%0A';
+    // Mensaje completo en texto plano y luego URL-encoded
+    const lines = [];
+    lines.push('🧾 Solicitud de cotización');
+    lines.push(`Orden: ${booking_id}`);
+    lines.push(`Nombre: ${customer_full_name}`);
+    lines.push(`Email: ${customer_email}`);
+    lines.push(`Teléfono: ${customer_phone}`);
+    lines.push(`DNI/Pasaporte: ${dni_number}`);
+    lines.push(`Categoría: ${service_name}`);
+    if (category_range) lines.push(`Rango de precios: ${category_range}`);
+    lines.push(`Fechas: ${appointment_date} a ${fechadev}`);
+    lines.push(`Cantidad de días: ${appointment_duration}`);
+    lines.push('Extras:');
     if (form.extras && form.extras.length > 0) {
       (form.extras || []).forEach(id => {
         const extra = allExtras?.find(e => e.id === id);
-        if (extra) factura += `- ${extra.name}: $${parseInt(extra.price).toLocaleString('es-AR')}%0A`;
+        if (extra) lines.push(`- ${extra.name}: $${parseInt(extra.price).toLocaleString('es-AR')}`);
       });
     } else {
-      factura += '- Sin extras%0A';
+      lines.push('- Sin extras');
     }
     // Dirección personalizada si corresponde
     if (mostrarDireccion && direccionEntrega) {
-      factura += `Dirección de entrega: ${encodeURIComponent(direccionEntrega)}%0A`;
+      lines.push(`Dirección de entrega: ${direccionEntrega}`);
     } else {
-      factura += `Retiro en sede: Av. de los Lagos 7008, B1670 Rincón de Milberg%0A`;
+      lines.push('Retiro en sede: Av. de los Lagos 7008, B1670 Rincón de Milberg');
     }
-    factura += `Total aproximado: ${appointment_amount} (por ${appointment_duration})%0A%0A`;
-    factura += 'Quisiera recibir la cotización final y conocer los métodos de pago disponibles.';
-    return factura;
+    if (appointment_amount) lines.push(`Total aproximado: ${appointment_amount}`);
+    lines.push(`¿Posee tarjeta de crédito?: ${tarjeta_credito_var || ''}`);
+    if (customer_note) lines.push(`Nota del cliente: ${customer_note}`);
+    lines.push('');
+    lines.push('Solicito la cotización final y confirmación de disponibilidad.');
+    const msg = lines.join('\n');
+    return encodeURIComponent(msg);
   })();
+
+  // Número de WhatsApp del negocio para que el cliente inicie chat (env override)
+  const BUSINESS_WA = (process.env.WA_BUSINESS || process.env.BUSINESS_WHATSAPP || '5491126584086').replace(/[^0-9]/g, '');
+  const wa_contact_link = `https://wa.me/${BUSINESS_WA}?text=${whatsapp_factura}`;
 
   // Construir bloque de lista de extras para el correo del admin (si hay)
   let extras_list_block = '';
@@ -235,6 +250,7 @@ export default async function handler(req, res) {
     booking_id,
     tarjeta_credito: tarjeta_credito_var,
     customer_whatsapp_link,
+  wa_contact_link,
     extras_list_block,
     whatsapp_factura
   };
