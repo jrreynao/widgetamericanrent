@@ -1,7 +1,7 @@
 ## Backend API base
 
-- Production: configured via `.env.production` with `VITE_API_BASE=https://isracarent.com/api`.
-- Development: Vite dev server proxies `/backend` to the remote `/api` per `vite.config.js`. The app tries `VITE_API_BASE` first, then `/api`, then `/backend` as fallback.
+- Production: configured via `.env.production` with `VITE_API_BASE=https://americanrentacar.ar/api`.
+- Development: Vite dev server proxies `/backend` to the remote `/api` on `americanrentacar.ar` per `vite.config.js`. The app tries `VITE_API_BASE` first, then `/api`, then `/backend` as fallback.
 
 Endpoints used:
 - `GET /healthz` for health checks

@@ -6,12 +6,12 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://isracarent.com',
+  target: 'https://americanrentacar.ar',
         changeOrigin: true,
         secure: true
       },
       '/backend': {
-        target: 'https://isracarent.com',
+  target: 'https://americanrentacar.ar',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/backend/, '/api')
       }
