@@ -76,8 +76,10 @@ function App() {
         loadEmailTemplate("correo_admin.html")
       ]);
 
-      // Reemplazo de variables, pero NO reemplazar %tarjeta_credito% (lo hace el backend)
-      const replaceVars = (tpl, vars, skipKeys = []) => {
+  // Reemplazo de variables: dejar que el backend complete datos dinámicos
+  // No reemplazar: booking_id, appointment_duration, appointment_amount, teléfonos, WhatsApp,
+  // dirección dinámica, nombre de categoría/rango, imagen de servicio, tarjeta_credito (admin)
+  const replaceVars = (tpl, vars, skipKeys = []) => {
         let html = tpl;
         Object.entries(vars).forEach(([k, v]) => {
           if (!skipKeys.includes(k)) {
@@ -89,7 +91,7 @@ function App() {
 
       // Variables para reemplazar en las plantillas
       const vars = {
-        booking_id: formConTotal.id || "-",
+        booking_id: formConTotal.id || "%booking_id%",
         service_name: formConTotal.vehiculo?.nombre || "-",
         service_extras: (formConTotal.extras || []).map(id => {
           const extra = allExtras.find(e => e.id === id);
@@ -99,31 +101,30 @@ function App() {
         hora_entregadevehiculo: formConTotal.fechas?.horaRetiro || formConTotal.fechas?.horaEntrega || "-",
         fechadev: formConTotal.fechas?.fechaDevolucion || "-",
         hora_devolucionvehiculo: formConTotal.fechas?.horaDevolucion || "-",
-        appointment_duration: formConTotal.fechas?.diasAlquiler ? `${formConTotal.fechas.diasAlquiler} días` : "-",
-        appointment_amount: formConTotal.total ? `$${formConTotal.total}` : "-",
+        appointment_duration: "%appointment_duration%",
+        appointment_amount: "%appointment_amount%",
         text_direccionentrega_block: formConTotal.fechas?.delivery && formConTotal.fechas?.direccionEntrega
           ? `<b>Dirección de entrega:</b> ${formConTotal.fechas.direccionEntrega}`
           : "",
         // No reemplazar text_direccionentrega aquí, dejar el placeholder para el backend
         text_direccionentrega: "%text_direccionentrega%",
         customer_full_name: formConTotal.datos?.nombre || "-",
-        customer_phone: (formConTotal.datos?.codigoPais ? formConTotal.datos.codigoPais + ' ' : '') + (formConTotal.datos?.telefono || "-"),
+        customer_phone: "%customer_phone%",
         customer_email: formConTotal.datos?.email || "-",
         dni_number: formConTotal.datos?.dni || "-",
         customer_note: formConTotal.datos?.nota || "-",
-        customer_whatsapp_link: (() => {
-          // Elimina espacios, signos y ceros iniciales del número
-          let codigo = (formConTotal.datos?.codigoPais || '').replace(/[^\d]/g, '');
-          let numero = (formConTotal.datos?.telefono || '').replace(/[^\d]/g, '');
-          // Si el número empieza con 0, lo quitamos
-          if (numero.startsWith('0')) numero = numero.slice(1);
-          return codigo && numero ? codigo + numero : '';
-        })()
+        customer_whatsapp_link: "%customer_whatsapp_link%"
       };
 
-      const htmlCliente = replaceVars(plantillaCliente, vars);
+      // Claves que dejamos para que compute el backend
+      const SKIP_COMMON = [
+        'booking_id', 'appointment_duration', 'appointment_amount',
+        'text_direccionentrega', 'text_direccionentrega_block', 'text_direccionentrega_admin',
+        'customer_phone', 'customer_whatsapp_link', 'service_name', 'category_range', 'service_image', 'service_extras'
+      ];
+      const htmlCliente = replaceVars(plantillaCliente, vars, SKIP_COMMON);
       // No reemplazar %tarjeta_credito% en el admin, lo hace el backend
-      const htmlAdmin = replaceVars(plantillaAdmin, vars, ["tarjeta_credito"]);
+      const htmlAdmin = replaceVars(plantillaAdmin, vars, [...SKIP_COMMON, 'tarjeta_credito']);
 
   // Endpoint: usa VITE_API_BASE si está definido; si no, intenta /api y luego /backend
   const bases = [import.meta.env?.VITE_API_BASE, "/api", "/backend"].filter(Boolean);

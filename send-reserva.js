@@ -87,7 +87,7 @@ export default async function handler(req, res) {
   const service_image = vehiculoRepresentativo?.imagen || vehiculoRepresentativo?.image || '';
   const category_range = (minPrecio && maxPrecio)
     ? `$${Number(minPrecio).toLocaleString('es-AR')} - $${Number(maxPrecio).toLocaleString('es-AR')} / día`
-    : '';
+    : (minPrecio ? `$${Number(minPrecio).toLocaleString('es-AR')} / día` : '');
   const service_extras = (form.extras || []).map(id => {
     const extra = allExtras?.find(e => e.id === id);
     return extra ? (extra.name || extra.nombre || id) : id;
@@ -119,8 +119,8 @@ export default async function handler(req, res) {
         return extra ? parseInt(extra.price) || 0 : 0;
       }).reduce((a,b)=>a+b,0);
     }
-    const total = totalVehiculo + totalExtras;
-    return total ? `$${Number(total).toLocaleString('es-AR')}` : '';
+  const total = totalVehiculo + totalExtras;
+  return total ? `$${Number(total).toLocaleString('es-AR')}` : '';
   })();
 
   // Lógica para mostrar dirección de entrega según extras
@@ -222,7 +222,7 @@ export default async function handler(req, res) {
     service_name,
     service_image,
     service_extras,
-  category_range,
+    category_range,
     appointment_date,
     fechadev,
     hora_entregadevehiculo,
@@ -235,7 +235,7 @@ export default async function handler(req, res) {
     booking_id,
     tarjeta_credito: tarjeta_credito_var,
     customer_whatsapp_link,
-  extras_list_block,
+    extras_list_block,
     whatsapp_factura
   };
 
