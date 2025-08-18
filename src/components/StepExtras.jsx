@@ -5,11 +5,7 @@ const StepExtras = ({ extras, selectedExtras, onChange, onNext, onBack }) => {
   // Ref para el widget
   const widgetRef = React.useRef(null);
 
-  React.useEffect(() => {
-    if (widgetRef.current) {
-      widgetRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }, []);
+  // Nota: evitamos auto-scroll al montar este paso para no mover el viewport
   const extraVisual = {
     "1": {
       icon: FaTruck,
@@ -30,14 +26,14 @@ const StepExtras = ({ extras, selectedExtras, onChange, onNext, onBack }) => {
   };
 
   return (
-  <div ref={widgetRef} className="step-extras-form" style={{background:'transparent'}}>
-      <div className="extras-card-container" style={{width:'100%', maxWidth:'1200px', margin:'2rem auto', boxSizing:'border-box', background:'#fff', borderRadius:'20px', boxShadow:'0 8px 32px 0 rgba(60,60,60,0.10)', padding:'2.5rem 1.5rem'}}>
+  <div ref={widgetRef} className="step-extras-form" style={{background:'transparent', display:'block'}}>
+  <div className="extras-card-container" style={{width:'100%', maxWidth:'1400px', margin:'2rem auto', boxSizing:'border-box', background:'#fff', borderRadius:'20px', boxShadow:'0 8px 32px 0 rgba(60,60,60,0.10)', padding:'2.5rem 1.5rem'}}>
         <form onSubmit={e => { e.preventDefault(); onNext(); }} style={{width:'100%', margin:0, padding:0, boxSizing:'border-box'}}>
           <div style={{textAlign:'center', marginBottom:'1.5rem'}}>
             <h2 style={{fontSize:'2.2rem', fontWeight:800, color:'#222', marginBottom:'0.5rem'}}>Selecciona los extras para tu alquiler</h2>
             <div style={{fontSize:'1.1rem', color:'#555'}}>Personaliza tu viaje con estos complementos opcionales.</div>
           </div>
-          <div className="extras-list-responsive" style={{width:'100%', marginBottom:'1.2rem', display:'flex', gap:'0.7rem', flexDirection:'column', flexWrap:'wrap'}}>
+          <div className="extras-list-responsive" style={{width:'100%', marginBottom:'1.2rem', display:'grid', gap:'1.2rem', gridTemplateColumns:'repeat(auto-fit, minmax(240px, 1fr))'}}>
             {extras.map(extra => {
               const Icon = extraVisual[extra.id]?.icon || FaTruck;
               let titulo = '';
@@ -50,14 +46,14 @@ const StepExtras = ({ extras, selectedExtras, onChange, onNext, onBack }) => {
                 <label
                   key={extra.id}
                   htmlFor={`extra-${extra.id}`}
-                  style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flex: '1 1 220px', minWidth: 0, border: selectedExtras.includes(extra.id) ? '2.5px solid var(--wr-brand)' : '1.5px solid #e5e7eb', background: selectedExtras.includes(extra.id) ? 'rgba(46,204,113,0.06)' : '#fff', borderRadius: '16px', boxShadow:'0 2px 12px rgba(0,0,0,0.07)', padding: '0.7rem 0.7rem', minHeight: '70px', maxWidth: '100%', transition:'border 0.2s, box-shadow 0.2s', marginBottom:'0'}}>
-                  <span style={{ flex: '0 0 auto', marginRight: '1.1rem', background: '#f8f8f8', borderRadius: '12px', width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Icon size={38} color="var(--wr-brand)" />
+                  style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap:'1rem', flex: '1 1 220px', minWidth: 0, border: selectedExtras.includes(extra.id) ? '2.5px solid var(--wr-brand)' : '1.5px solid #e5e7eb', background: selectedExtras.includes(extra.id) ? 'rgba(46,204,113,0.06)' : '#fff', borderRadius: '16px', boxShadow:'0 2px 12px rgba(0,0,0,0.07)', padding: '1rem 1rem', minHeight: '90px', maxWidth: '100%', transition:'border 0.2s, box-shadow 0.2s', marginBottom:'0'}}>
+                  <span style={{ flex: '0 0 auto', marginRight: '1.1rem', background: '#f8f8f8', borderRadius: '12px', width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Icon size={40} color="var(--wr-brand)" />
                   </span>
-                  <span style={{ display: 'flex', flexDirection: 'column', flex: '1 1 0', minWidth: 0, justifyContent: 'center', alignItems: 'flex-start', textAlign: 'left' }}>
-                    <span style={{ fontWeight: 700, fontSize: '1.15rem', color: '#222', marginBottom: '0.2rem', lineHeight: '1.2' }}>{titulo}</span>
-                    <span style={{ color: '#555', fontSize: '0.98rem', marginBottom: '0.3rem', lineHeight: '1.2' }}>{extraVisual[extra.id]?.desc}</span>
-                    <span style={{ color: '#222', fontSize: '1.1rem', fontWeight:700 }}>+${extra.price.toLocaleString('es-CO')} <span style={{fontSize:'0.9em', color:'#888', fontWeight:400}}>/ día</span></span>
+                  <span style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: '1 1 0', minWidth: 0, justifyContent: 'center', alignItems: 'flex-start', textAlign: 'left', lineHeight:'1.4' }}>
+                    <span style={{ fontWeight: 700, fontSize: '18px', color: '#222' }}>{titulo}</span>
+                    <span style={{ color: '#555', fontSize: '15px' }}>{extraVisual[extra.id]?.desc}</span>
+                    <span style={{ color: '#222', fontSize: '18px', fontWeight:700, marginTop:'2px' }}>+${extra.price.toLocaleString('es-CO')} <span style={{fontSize:'14px', color:'#888', fontWeight:400}}>/ día</span></span>
                   </span>
                   <input
                     type="checkbox"
@@ -72,6 +68,17 @@ const StepExtras = ({ extras, selectedExtras, onChange, onNext, onBack }) => {
             })}
           </div>
           <style>{`
+            /* Responsive grid: 1→2→3→4 columns */
+            @media (min-width: 600px) {
+              .extras-list-responsive { grid-template-columns: repeat(2, minmax(240px, 1fr)) !important; }
+            }
+            @media (min-width: 900px) {
+              .extras-list-responsive { grid-template-columns: repeat(3, minmax(240px, 1fr)) !important; }
+            }
+            @media (min-width: 1200px) {
+              .extras-list-responsive { grid-template-columns: repeat(4, minmax(240px, 1fr)) !important; }
+            }
+
             /* Modern circular dot checkbox */
             .extras-check {
               appearance: none;
@@ -96,39 +103,39 @@ const StepExtras = ({ extras, selectedExtras, onChange, onNext, onBack }) => {
             .extras-check:focus-visible { box-shadow: 0 0 0 3px rgba(46,204,113,0.25); }
             .extras-check:disabled { opacity: 0.5; cursor: not-allowed; }
 
-            @media (min-width: 700px) {
+      @media (min-width: 700px) {
               .extras-list-responsive {
-                flex-direction: row !important;
-                gap: 2rem !important;
+        flex-direction: row !important;
+        gap: 1.5rem !important;
                 flex-wrap: wrap !important;
                 justify-content: center !important;
               }
               .extras-list-responsive label[for^='extra-'] {
-                min-width: 220px !important;
-                max-width: 340px !important;
-                margin-bottom: 0 !important;
-                flex: 1 1 220px !important;
-                padding: 1.1rem 1rem !important;
-                min-height: 90px !important;
+        min-width: 240px !important;
+        max-width: 360px !important;
+        margin-bottom: 0 !important;
+        flex: 1 1 260px !important;
+        padding: 1.1rem 1.2rem !important;
+        min-height: 110px !important;
               }
             }
-            @media (max-width: 699px) {
+      @media (max-width: 699px) {
               .extras-list-responsive {
-                flex-direction: column !important;
-                gap: 0.7rem !important;
-                width: 100% !important;
-                flex-wrap: nowrap !important;
+        flex-direction: column !important;
+        gap: 0.9rem !important;
+        width: 100% !important;
+        flex-wrap: nowrap !important;
               }
               .extras-list-responsive label[for^='extra-'] {
-                min-width: 0 !important;
-                max-width: 100% !important;
-                margin-bottom: 0 !important;
-                flex-direction: row !important;
-                align-items: center !important;
-                justify-content: space-between !important;
-                padding: 0.7rem 0.7rem !important;
-                flex: 1 1 100% !important;
-                min-height: 70px !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        margin-bottom: 0 !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 1rem 1rem !important;
+        flex: 1 1 100% !important;
+        min-height: 100px !important;
               }
             }
           `}</style>

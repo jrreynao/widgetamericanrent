@@ -33,11 +33,7 @@ const StepVehiculo = ({ onNext, onBack, selected, setSelected }) => {
   // Ref para el widget
   const widgetRef = React.useRef(null);
 
-  React.useEffect(() => {
-    if (widgetRef.current) {
-      widgetRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }, []);
+  // Nota: evitamos auto-scroll al montar este paso para no mover el viewport
   const [categoria, setCategoria] = useState(selected?.categoria || "");
 
   // Datos visuales y descripciones por categoría
@@ -77,7 +73,7 @@ const StepVehiculo = ({ onNext, onBack, selected, setSelected }) => {
   };
 
   return (
-  <div ref={widgetRef} className="step-vehiculo-form" style={{background:'transparent'}}>
+  <div ref={widgetRef} className="step-vehiculo-form" style={{background:'transparent', display:'block'}}>
       <div className="vehiculo-card-container" style={{width:'100%', maxWidth:'1200px', margin:'2rem auto', boxSizing:'border-box', background:'#fff', borderRadius:'20px', boxShadow:'0 8px 32px 0 rgba(60,60,60,0.10)', padding:'2.5rem 1.5rem'}}>
         <div style={{textAlign:'center', marginBottom:'1.5rem'}}>
           <h2 style={{fontSize:'2.2rem', fontWeight:800, color:'#222', marginBottom:'0.5rem'}}>Selecciona una categoría de vehículo</h2>

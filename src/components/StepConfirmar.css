@@ -1,17 +1,17 @@
-/* Compact mobile sizing for confirmar */
+/* Compact mobile sizing for confirmar (scoped) */
 @media (max-width: 650px) {
-	.confirmar-card-mobile { padding: 0.7rem !important; }
-	.step-confirmar-mobile h1 { font-size: 1.05rem !important; }
-	.step-confirmar-mobile p { font-size: 0.95rem !important; }
-	.step-confirmar-mobile button { padding: 0.7rem 0.9rem !important; font-size: 0.98rem !important; }
+	#wr .confirmar-card-mobile { padding: 0.7rem !important; }
+	#wr .step-confirmar-mobile h1 { font-size: 1.05rem !important; }
+	#wr .step-confirmar-mobile p { font-size: 0.95rem !important; }
+	#wr .step-confirmar-mobile button { padding: 0.7rem 0.9rem !important; font-size: 0.98rem !important; }
 
 	/* Force bigger amount on mobile */
-	.step-confirmar-mobile .confirmar-total-amount { font-size: 2.4rem !important; line-height: 1.1 !important; }
+	#wr .step-confirmar-mobile .confirmar-total-amount { font-size: 2.4rem !important; line-height: 1.1 !important; }
 	/* Make the note smaller on mobile */
-	.step-confirmar-mobile .confirmar-total-note { font-size: 0.85rem !important; }
+	#wr .step-confirmar-mobile .confirmar-total-note { font-size: 0.85rem !important; }
 }
 
 /* Desktop/tablet note smaller (also applies generally) */
-.confirmar-total-note { font-size: 0.9rem; }
+#wr .confirmar-total-note { font-size: 0.9rem; }
 /* Desktop/tablet amount default matches previous look */
-.confirmar-total-amount { font-size: 2.2rem; }
+#wr .confirmar-total-amount { font-size: 2.2rem; }

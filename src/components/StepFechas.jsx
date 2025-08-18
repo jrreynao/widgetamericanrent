@@ -49,6 +49,9 @@ export default function StepFechas({ onNext }) {
   // Refs para abrir el time picker al hacer click en todo el campo
   const startTimeRef = React.useRef(null);
   const endTimeRef = React.useRef(null);
+  // Refs para medir posición de los campos fecha
+  const retiroGroupRef = React.useRef(null);
+  const devolGroupRef = React.useRef(null);
 
   const openTimePicker = (ref) => {
     const el = ref?.current;
@@ -59,11 +62,7 @@ export default function StepFechas({ onNext }) {
     el.focus();
   };
 
-  React.useEffect(() => {
-    if (widgetRef.current) {
-      widgetRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }, []);
+  // Nota: evitamos auto-scroll al montar este paso para no mover el viewport
   const [sucursal] = useState("Buenos Aires");
   const today = dayjs();
   const defaultRetiro = today.add(1, "day").toDate();
@@ -71,6 +70,26 @@ export default function StepFechas({ onNext }) {
   const [fechaDevolucion, setFechaDevolucion] = useState(null);
   const [horaRetiro, setHoraRetiro] = useState("08:00");
   const [horaDevolucion, setHoraDevolucion] = useState("14:00");
+  // Estado para controlar la colocación del popper según espacio disponible
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth <= 900;
+  });
+  // Preferimos abrir arriba (top-start) y que el popper haga flip si abajo hay más espacio.
+  // Sin modal: usamos el popper normal anclado al campo
+
+  React.useEffect(() => {
+    const onResize = () => {
+      const mobile = window.innerWidth <= 900;
+      setIsMobile(mobile);
+  // no gestionamos placement por estado; el popper decide con flip
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  const handleOpenRetiro = () => {};
+  const handleOpenDevol = () => {};
 
   const fechaRetiroStr = fechaRetiro ? dayjs(fechaRetiro).format("YYYY-MM-DD") : "";
   const fechaDevolucionStr = fechaDevolucion ? dayjs(fechaDevolucion).format("YYYY-MM-DD") : "";
@@ -102,6 +121,8 @@ export default function StepFechas({ onNext }) {
           width: 100%;
           margin: 2rem auto;
           box-sizing: border-box;
+          /* Ensure poppers can overflow visually when needed */
+          overflow: visible;
         }
         .step-fechas-grid {
           display: flex;
@@ -127,6 +148,7 @@ export default function StepFechas({ onNext }) {
           align-items: center;
           /* Make react-datepicker wrapper stretch so icon positioning is consistent */
           gap: 0; /* avoid extra spacing */
+          overflow: visible;
         }
         .step-fechas-input-group .react-datepicker-wrapper,
         .step-fechas-input-group .react-datepicker__input-container {
@@ -145,9 +167,9 @@ export default function StepFechas({ onNext }) {
           top: 50%;
           transform: translateY(-50%);
           color: #6b7280;
-          font-size: 1.1rem;
+          font-size: 16px;
           pointer-events: none;
-          z-index: 2; /* keep icon above DatePicker input container */
+          z-index: 5; /* above input, below popper */
         }
         .step-fechas-input {
           width: 100%;
@@ -155,7 +177,7 @@ export default function StepFechas({ onNext }) {
           padding: 0.8rem 1rem;
           border: 1px solid #e5e7eb;
           border-radius: 10px;
-          font-size: 1.1rem;
+          font-size: 16px;
           background: #fff;
           color: #3d4152;
           outline: none;
@@ -168,7 +190,7 @@ export default function StepFechas({ onNext }) {
           /* Desktop/base: tighter spacing between icon and text */
           padding-left: 2.2rem !important;
           height: 44px !important;
-          font-size: 1.05rem !important;
+          font-size: 16px !important;
         }
         /* Extra padding for text inputs like 'Sucursal' to prevent icon overlap */
         input[type="text"].step-fechas-input-icon,
@@ -290,8 +312,23 @@ export default function StepFechas({ onNext }) {
         .step-fechas-datepicker-calendar .react-datepicker__day--disabled.react-datepicker__day--today {
           box-shadow: none; /* remove today ring if disabled */
         }
-        /* Ensure the calendar popper overlays surrounding UI */
-        .react-datepicker-popper { z-index: 50; }
+  /* Ensure the calendar popper overlays surrounding UI */
+  .react-datepicker-popper { z-index: 2147483647 !important; width: auto; }
+  /* Keep popper width close to input for alignment on small screens */
+  .step-fechas-input-group .react-datepicker-popper { min-width: 260px; }
+  .step-fechas-popper[data-popper-placement^="top"] { margin-bottom: 10px; }
+  .step-fechas-popper[data-popper-placement^="bottom"] { margin-top: 8px; }
+
+        /* Cap calendar height on very small screens and allow scrolling inside */
+        .step-fechas-datepicker-calendar.react-datepicker {
+          max-height: calc(100vh - 48px);
+          overflow-y: auto; /* allow scroll if needed */
+          -webkit-overflow-scrolling: touch;
+          overscroll-behavior: contain;
+        }
+        .step-fechas-datepicker-calendar .react-datepicker__month-container {
+          max-height: inherit;
+        }
 
         .step-fechas-btn-grid-item {
           min-width: 180px;
@@ -322,6 +359,7 @@ export default function StepFechas({ onNext }) {
           background: #c7c7c7;
           cursor: not-allowed;
         }
+
         @media (max-width: 900px) {
           /* On mobile, restore larger paddings to avoid overlap and keep comfortable touch targets */
           .step-fechas-icon { left: 0.8rem; }
@@ -338,12 +376,13 @@ export default function StepFechas({ onNext }) {
         }
         @media (max-width: 650px) {
           .step-fechas-card {
-            padding: 0.5rem 0.2rem;
-            border-radius: 18px;
+            padding: 1rem 0.75rem; /* más aire lateral */
+            border-radius: 16px;
             box-shadow: 0 8px 32px 0 rgba(60,60,60,0.10);
-            margin: 0 auto;
-            max-width: 95vw;
+            margin: 0.9rem auto; /* separar del borde superior/inferior */
+            max-width: 98vw; /* respetar el contenedor padre y dar respiro */
           }
+          .step-fechas-datepicker-calendar.react-datepicker { max-height: calc(100vh - 96px); }
           .step-fechas-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -359,7 +398,7 @@ export default function StepFechas({ onNext }) {
           }
         }
       `}</style>
-      <div className="step-fechas-card">
+  <div className="step-fechas-card">
         <form className="step-fechas-form" onSubmit={handleSubmit} style={{width:'100%', margin:0, padding:0, boxSizing:'border-box'}}>
           <div className="step-fechas-grid">
             {/* Sucursal: línea completa */}
@@ -381,7 +420,7 @@ export default function StepFechas({ onNext }) {
             {/* Recogida y hora de recogida */}
             <div className="step-fechas-grid-item">
               <label className="step-fechas-label" htmlFor="start-date">Recogida</label>
-              <div className="step-fechas-input-group">
+        <div className="step-fechas-input-group" ref={retiroGroupRef}>
                 <span className="step-fechas-icon"><FaRegCalendar /></span>
                 <DatePicker
                   selected={fechaRetiro}
@@ -400,10 +439,19 @@ export default function StepFechas({ onNext }) {
                   dropdownMode="select"
                   className="step-fechas-input step-fechas-input-icon"
                   calendarClassName="step-fechas-datepicker-calendar"
+                  popperClassName="step-fechas-popper"
                   locale="es"
                   id="custom-retiro"
                   name="customRetiro"
                   autoComplete="off"
+                  onInputClick={handleOpenRetiro}
+                  popperPlacement={'bottom-start'}
+                  popperModifiers={[
+                    { name: 'offset', options: { offset: [0, 10] } },
+                    { name: 'flip', options: { fallbackPlacements: ['top-start', 'bottom-end', 'top-end'] } },
+                    { name: 'preventOverflow', options: { boundary: 'viewport', rootBoundary: 'viewport', altBoundary: true, tether: true, padding: 8 } }
+                  ]}
+          onCalendarOpen={handleOpenRetiro}
                 />
               </div>
             </div>
@@ -426,7 +474,7 @@ export default function StepFechas({ onNext }) {
             {/* Devolución y hora de devolución */}
             <div className="step-fechas-grid-item">
               <label className="step-fechas-label" htmlFor="end-date">Devolución</label>
-              <div className="step-fechas-input-group">
+        <div className="step-fechas-input-group" ref={devolGroupRef}>
                 <span className="step-fechas-icon"><FaRegCalendar /></span>
                 <DatePicker
                   selected={fechaDevolucion}
@@ -440,11 +488,20 @@ export default function StepFechas({ onNext }) {
                   dropdownMode="select"
                   className="step-fechas-input step-fechas-input-icon"
                   calendarClassName="step-fechas-datepicker-calendar"
+                  popperClassName="step-fechas-popper"
                   locale="es"
                   id="custom-devolucion"
                   name="customDevolucion"
                   autoComplete="off"
                   disabled={!fechaRetiro}
+                  onInputClick={handleOpenDevol}
+                  popperPlacement={'bottom-start'}
+                  popperModifiers={[
+                    { name: 'offset', options: { offset: [0, 10] } },
+                    { name: 'flip', options: { fallbackPlacements: ['top-start', 'bottom-end', 'top-end'] } },
+                    { name: 'preventOverflow', options: { boundary: 'viewport', rootBoundary: 'viewport', altBoundary: true, tether: true, padding: 8 } }
+                  ]}
+          onCalendarOpen={handleOpenDevol}
                 />
               </div>
             </div>
