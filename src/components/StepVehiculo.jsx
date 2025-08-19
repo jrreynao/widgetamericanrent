@@ -82,7 +82,9 @@ const StepVehiculo = ({ onNext, onBack, selected, setSelected }) => {
         <div className="vehiculo-categorias-grid" style={{width:'100%', marginBottom:'2.5rem', display:'flex', gap:'1.2rem', flexDirection:'column'}}>
           {categoriaVisual.map(cat => {
             const rango = getRangoPrecios(cat.id);
-            const selectedStyle = cat.id === categoria ? {border:'2.5px solid var(--wr-brand)', boxShadow:'0 4px 24px rgba(46,204,113,0.12)', background:'rgba(46,204,113,0.06)'} : {border:'1.5px solid #e5e7eb', background:'#fff'};
+            const selectedStyle = cat.id === categoria
+              ? { border: '2.5px solid var(--wr-brand)', boxShadow: '0 4px 24px var(--wr-brand-12a)', background: 'var(--wr-brand-06a)' }
+              : { border: '1.5px solid #e5e7eb', background: '#fff' };
             return (
               <button key={cat.id} type="button" className="vehiculo-categoria-card"
                 style={{
@@ -100,7 +102,7 @@ const StepVehiculo = ({ onNext, onBack, selected, setSelected }) => {
                 }}
                 onClick={()=>handleCategoria(cat.id)}>
                 <span style={{marginRight:'1.1rem', display:'flex', alignItems:'center', justifyContent:'center', width:'60px', height:'60px', background:'#f8f8f8', borderRadius:'12px', flexShrink:0}}>
-                  {cat.icon && React.createElement(cat.icon, {size: 38, color: 'var(--wr-brand)'})}
+                  {cat.icon && React.createElement(cat.icon, { size: 38, color: 'var(--wr-brand)' })}
                 </span>
                 <div style={{flex:'1 1 0', textAlign:'left'}}>
                   <div style={{fontSize:'1.15rem', fontWeight:700, color:'#222', marginBottom:'0.2rem'}}>{cat.nombre}</div>
@@ -129,7 +131,7 @@ const StepVehiculo = ({ onNext, onBack, selected, setSelected }) => {
         {/* Botonera estandarizada como en Datos */}
         <div className="vehiculo-btns" style={{display:'flex', justifyContent:'flex-end', marginTop:'1.5rem', gap:'1rem'}}>
           <button type="button" onClick={onBack} className="wr-btn wr-btn--secondary">← Atrás</button>
-          <button type="button" onClick={()=>onNext({ categoria, rango: getRangoPrecios(categoria) })} className="wr-btn wr-btn--primary" style={{opacity: categoria ? 1 : 0.6, cursor: categoria ? 'pointer' : 'not-allowed'}} disabled={!categoria}>Continuar →</button>
+          <button type="button" onClick={()=>onNext({ categoria, rango: getRangoPrecios(categoria) })} className="wr-btn wr-btn--primary" style={{opacity: categoria ? 1 : 0.6, cursor: categoria ? 'pointer' : 'not-allowed', color:'#fff'}} disabled={!categoria}>Continuar →</button>
         </div>
         <style>{`
           @media (max-width: 480px) {

@@ -117,7 +117,7 @@
   font-size: 0.8rem;
   font-weight: 600;
   margin-bottom: 0.2rem;
-  color: #1b7e3c;
+  color: var(--wr-heading);
   text-align: center;
 }
 
@@ -173,7 +173,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s;
-  box-shadow: 0 2px 8px rgba(255,102,0,0.08);
+  box-shadow: 0 2px 8px rgba(11,61,145,0.08);
   max-width: 100%;
  }
  .next-btn-flat {

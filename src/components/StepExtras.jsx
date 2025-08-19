@@ -142,7 +142,7 @@ const StepExtras = ({ extras, selectedExtras, onChange, onNext, onBack }) => {
           {/* Botonera estandarizada como en Datos */}
           <div className="extras-btns" style={{display:'flex', justifyContent:'flex-end', marginTop:'1.5rem', gap:'1rem'}}>
             <button type="button" onClick={onBack} className="wr-btn wr-btn--secondary">← Atrás</button>
-            <button type="submit" className="wr-btn wr-btn--primary" style={{display:'inline-flex', alignItems:'center', gap:'0.5em'}}>Siguiente →</button>
+            <button type="submit" className="wr-btn wr-btn--primary" style={{display:'inline-flex', alignItems:'center', gap:'0.5em', color:'#fff'}}>Siguiente →</button>
           </div>
           <style>{`
             @media (max-width: 480px) {

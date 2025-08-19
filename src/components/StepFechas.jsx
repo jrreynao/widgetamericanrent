@@ -349,7 +349,7 @@ export default function StepFechas({ onNext }) {
           align-items: center;
           justify-content: center;
           background: var(--wr-brand);
-          color: #fff;
+          color: #fff !important; -webkit-text-fill-color: #fff !important;
           border: none;
           transition: background 0.2s, transform 0.2s;
           margin-bottom: 0;

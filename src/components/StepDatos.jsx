@@ -117,7 +117,7 @@ const StepDatos = ({ onNext, onBack, initialData = {}, extrasSeleccionados = [] 
           </div>
           <div className="datos-btns" style={{display:'flex', justifyContent:'flex-end', marginTop:'1.5rem', width:'100%', gap:'1rem'}}>
             <button type="button" className="wr-btn wr-btn--secondary" onClick={onBack}>← Atrás</button>
-            <button type="submit" className="wr-btn wr-btn--primary">Confirmar Datos →</button>
+            <button type="submit" className="wr-btn wr-btn--primary" style={{color:'#fff'}}>Confirmar Datos →</button>
           </div>
         </form>
       </div>

@@ -36,3 +36,20 @@ If you are developing a production application, we recommend using TypeScript wi
 ssh -p 21098 isrammek@66.29.146.38
 
 source /home/isrammek/nodevenv/public_html/api/18/bin/activate && cd /home/isrammek/public_html/api
+
+## Admin WhatsApp notification (Twilio)
+
+Optionally send a WhatsApp message to the admin after a reservation is received. Configure these environment variables in your API host:
+
+- `TWILIO_ACCOUNT_SID` – Your Twilio Account SID
+- `TWILIO_AUTH_TOKEN` – Your Twilio Auth Token
+- `TWILIO_WHATSAPP_FROM` – Your WhatsApp sender. Use your approved number or the sandbox: `whatsapp:+14155238886`
+- `ADMIN_WHATSAPP` (or `WA_ADMIN`) – Destination admin number in international format, e.g. `+5491123456789`
+
+Behavior:
+- If the above variables are set, after sending emails the server will send a concise WhatsApp summary to the admin.
+- If not set, WhatsApp is skipped gracefully.
+
+Notes:
+- For the sandbox, make sure the admin number has joined the sandbox in Twilio.
+- We also include a clickable link to open a chat with the customer when a phone is provided.

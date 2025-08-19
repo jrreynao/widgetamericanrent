@@ -276,8 +276,48 @@ export default async function handler(req, res) {
       subject: `Nueva solicitud de cotización - American Rent a Car - ${vars.customer_full_name}`,
       html: fillTemplate(htmlAdmin, vars)
     });
+    // Intentar WhatsApp (Twilio) al admin si hay configuración
+    let twilioInfo = { skipped: true };
+    const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID || process.env.TWILIO_SID || '';
+    const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN || process.env.TWILIO_TOKEN || '';
+    const TWILIO_WHATSAPP_FROM = process.env.TWILIO_WHATSAPP_FROM || 'whatsapp:+14155238886'; // sandbox por defecto
+    const ADMIN_WHATSAPP_RAW = (process.env.ADMIN_WHATSAPP || process.env.WA_ADMIN || '').trim();
+    if (TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN && ADMIN_WHATSAPP_RAW) {
+      try {
+        const { default: twilio } = await import('twilio');
+        const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
+        const digits = ADMIN_WHATSAPP_RAW.replace(/[^0-9]/g, '');
+        const to = `whatsapp:+${digits}`;
+        const from = TWILIO_WHATSAPP_FROM.startsWith('whatsapp:') ? TWILIO_WHATSAPP_FROM : `whatsapp:${TWILIO_WHATSAPP_FROM}`;
+        const lines = [];
+        lines.push('Nueva solicitud de cotización');
+        lines.push(`Orden: ${booking_id}`);
+        if (customer_full_name) lines.push(`Nombre: ${customer_full_name}`);
+        if (customer_phone) lines.push(`Teléfono: ${customer_phone}`);
+        if (customer_email) lines.push(`Email: ${customer_email}`);
+        lines.push(`Categoría: ${service_name}`);
+        if (category_range) lines.push(`Rango: ${category_range}`);
+        lines.push(`Fechas: ${appointment_date} a ${fechadev}`);
+        lines.push(`Días: ${appointment_duration}`);
+        if (service_extras) lines.push(`Extras: ${service_extras}`);
+        if (appointment_amount) lines.push(`Total aprox.: ${appointment_amount}`);
+        if (customer_note) lines.push(`Nota: ${customer_note}`);
+        // Link directo para abrir chat con el cliente (si hay teléfono)
+        if (customer_whatsapp_link) {
+          lines.push('');
+          lines.push(`Chat cliente: https://wa.me/${customer_whatsapp_link}`);
+        }
+        const body = lines.join('\n');
+        const msg = await client.messages.create({ from, to, body });
+        twilioInfo = { skipped: false, sid: msg.sid };
+      } catch (twilioErr) {
+        console.error('Twilio WA error:', twilioErr);
+        twilioInfo = { skipped: false, error: twilioErr?.message || String(twilioErr) };
+      }
+    }
+
     if (userResult.accepted.length && adminResult.accepted.length) {
-      res.json({ok:true});
+      res.json({ ok: true, twilio: twilioInfo });
     } else {
       res.status(500).json({error: 'No se pudo enviar uno o ambos correos'});
     }
