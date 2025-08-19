@@ -53,10 +53,9 @@ export default async function handler(req, res) {
   const smtpDomain = getDomain(SMTP_USER);
   const fromDomain = getDomain(FROM_EMAIL);
   // Si los dominios difieren, usar como From el SMTP_USER y dejar Reply-To con el correo de marca
-  const EFFECTIVE_FROM_EMAIL = smtpDomain && fromDomain && smtpDomain !== fromDomain && SMTP_USER
-    ? SMTP_USER
-    : FROM_EMAIL;
-  const USE_REPLY_TO = EFFECTIVE_FROM_EMAIL !== FROM_EMAIL ? FROM_EMAIL : '';
+  // Usar SIEMPRE el usuario SMTP como remitente real; Reply-To apunta al correo de marca si difiere
+  const EFFECTIVE_FROM_EMAIL = SMTP_USER || FROM_EMAIL;
+  const USE_REPLY_TO = FROM_EMAIL && EFFECTIVE_FROM_EMAIL.toLowerCase() !== FROM_EMAIL.toLowerCase() ? FROM_EMAIL : '';
 
   // Leer las plantillas desde la URL pública
   async function fetchTemplate(url) {
@@ -287,6 +286,7 @@ export default async function handler(req, res) {
   try {
     const userResult = await transporter.sendMail({
       from: `${FROM_NAME} <${EFFECTIVE_FROM_EMAIL}>`,
+      sender: EFFECTIVE_FROM_EMAIL,
       to: vars.customer_email,
       subject: '¡Recibimos tu solicitud en American Rent a Car! 🎉',
       html: fillTemplate(htmlCliente, vars),
@@ -299,6 +299,7 @@ export default async function handler(req, res) {
     });
     const adminResult = await transporter.sendMail({
       from: `${FROM_NAME} <${EFFECTIVE_FROM_EMAIL}>`,
+      sender: EFFECTIVE_FROM_EMAIL,
       to: ADMIN_EMAIL,
       subject: `Nueva solicitud de cotización - American Rent a Car - ${vars.customer_full_name}`,
       html: fillTemplate(htmlAdmin, vars),
