@@ -363,6 +363,18 @@ export default async function handler(req, res) {
         code: e.code,
         response: e.response,
         command: e.command
+      },
+      config: {
+        ADMIN_EMAIL,
+        FROM_NAME,
+        FROM_EMAIL,
+        SMTP: {
+          host: process.env.SMTP_HOST || 'mail.americanrentacar.ar',
+          port: process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 465,
+          secure: typeof process.env.SMTP_SECURE !== 'undefined' ? /^(1|true|yes)$/i.test(String(process.env.SMTP_SECURE)) : ((process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 465) === 465),
+          name: process.env.SMTP_NAME || 'americanrentacar.ar',
+          user: (process.env.SMTP_USER || '').replace(/(.).+(@.*)/, '$1***$2')
+        }
       }
     });
   }

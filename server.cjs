@@ -135,6 +135,37 @@ app.post('/api/smtp-send-test', async (req, res) => {
   }
 });
 
+// Snapshot de configuración efectiva (datos sensibles enmascarados)
+app.get('/api/env-snapshot', (req, res) => {
+  const mask = (v = '') => (typeof v === 'string' && v.length > 3 ? v[0] + '***' + v.slice(-1) : '***');
+  const boolOr = (val, def) => {
+    if (typeof val === 'undefined') return def;
+    return /^(1|true|yes)$/i.test(String(val));
+  };
+  const port = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 465;
+  const secure = typeof process.env.SMTP_SECURE !== 'undefined' ? boolOr(process.env.SMTP_SECURE, false) : (port === 465);
+  res.json({
+    ok: true,
+    mail: {
+      ADMIN_EMAIL: process.env.ADMIN_EMAIL || null,
+      MAIL_FROM_NAME: process.env.MAIL_FROM_NAME || null,
+      MAIL_FROM: process.env.MAIL_FROM || null,
+      FRONTEND_BASE: process.env.FRONTEND_BASE || null
+    },
+    smtp: {
+      host: process.env.SMTP_HOST || 'mail.americanrentacar.ar',
+      port,
+      secure,
+      name: process.env.SMTP_NAME || 'americanrentacar.ar',
+      user: mask(process.env.SMTP_USER || ''),
+      pass: process.env.SMTP_PASS ? mask(process.env.SMTP_PASS) : null
+    },
+    features: {
+      twilio: Boolean(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN)
+    }
+  });
+});
+
 // Manejo básico de errores
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
