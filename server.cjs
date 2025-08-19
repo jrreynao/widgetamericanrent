@@ -3,6 +3,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const nodemailer = require('nodemailer');
 // Cargar el handler ESM de forma perezosa con import() dentro del middleware
 let handlerPromise = null;
 async function getHandler() {
@@ -70,6 +71,32 @@ app.get('/api/send-reserva', (req, res) => {
 app.get('/healthz', (req, res) => res.json({ ok: true }));
 app.get('/backend/healthz', (req, res) => res.json({ ok: true }));
 app.get('/api/healthz', (req, res) => res.json({ ok: true }));
+
+// Verificación SMTP rápida (no envía correo)
+app.get('/api/smtp-verify', async (req, res) => {
+  try {
+    const smtpPort = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 465;
+    const smtpSecure = typeof process.env.SMTP_SECURE !== 'undefined'
+      ? /^(1|true|yes)$/i.test(String(process.env.SMTP_SECURE))
+      : smtpPort === 465;
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'mail.americanrentacar.ar',
+      port: smtpPort,
+      secure: smtpSecure,
+      name: process.env.SMTP_NAME || 'americanrentacar.ar',
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
+      },
+      requireTLS: !smtpSecure,
+      tls: { rejectUnauthorized: false }
+    });
+    const ok = await transporter.verify().then(() => true).catch((err) => { throw err; });
+    res.json({ ok, smtp: { host: transporter.options.host, port: transporter.options.port, secure: transporter.options.secure } });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message, code: e.code, response: e.response, command: e.command });
+  }
+});
 
 // Manejo básico de errores
 // eslint-disable-next-line no-unused-vars
