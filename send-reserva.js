@@ -26,7 +26,8 @@ export default async function handler(req, res) {
 
   // Configurar transporter de nodemailer
   const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'mail.isracarent.com',
+    // Usar el host del entorno; por defecto apuntar al dominio actual
+    host: process.env.SMTP_HOST || 'mail.americanrentacar.ar',
     port: process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 465,
     secure: true, // SSL
     auth: {
@@ -38,6 +39,18 @@ export default async function handler(req, res) {
     }
   });
 
+  // Determinar un remitente seguro acorde al dominio del SMTP para evitar
+  // "550 header From not allowed" cuando el FROM no coincide con el dominio autenticado
+  const SMTP_USER = process.env.SMTP_USER || '';
+  const getDomain = (email = '') => (email.includes('@') ? email.split('@')[1].toLowerCase() : '');
+  const smtpDomain = getDomain(SMTP_USER);
+  const fromDomain = getDomain(FROM_EMAIL);
+  // Si los dominios difieren, usar como From el SMTP_USER y dejar Reply-To con el correo de marca
+  const EFFECTIVE_FROM_EMAIL = smtpDomain && fromDomain && smtpDomain !== fromDomain && SMTP_USER
+    ? SMTP_USER
+    : FROM_EMAIL;
+  const USE_REPLY_TO = EFFECTIVE_FROM_EMAIL !== FROM_EMAIL ? FROM_EMAIL : '';
+
   // Leer las plantillas desde la URL pública
   async function fetchTemplate(url) {
     const res = await fetch(url);
@@ -46,12 +59,13 @@ export default async function handler(req, res) {
   }
   // Si el front envía HTML listo, priorizarlo. Si no, usar plantillas públicas.
   const FRONTEND_BASE = process.env.FRONTEND_BASE || '';
+  // Prefer API path if the frontend is served behind /api (e.g., americanrentacar.ar/api/email_templates)
   const clienteURL = FRONTEND_BASE
     ? `${FRONTEND_BASE.replace(/\/$/, '')}/email_templates/correo_cliente.html`
-    : 'https://widget.isracarent.com/email_templates/correo_cliente.html';
+    : 'https://americanrentacar.ar/api/email_templates/correo_cliente.html';
   const adminURL = FRONTEND_BASE
     ? `${FRONTEND_BASE.replace(/\/$/, '')}/email_templates/correo_admin.html`
-    : 'https://widget.isracarent.com/email_templates/correo_admin.html';
+    : 'https://americanrentacar.ar/api/email_templates/correo_admin.html';
   const htmlClienteRaw = (req.body && req.body.htmlCliente) ? String(req.body.htmlCliente) : await fetchTemplate(clienteURL);
   const htmlAdminRaw = (req.body && req.body.htmlAdmin) ? String(req.body.htmlAdmin) : await fetchTemplate(adminURL);
   const htmlCliente = htmlClienteRaw;
@@ -265,16 +279,27 @@ export default async function handler(req, res) {
 
   try {
     const userResult = await transporter.sendMail({
-      from: `${FROM_NAME} <${FROM_EMAIL}>`,
+      from: `${FROM_NAME} <${EFFECTIVE_FROM_EMAIL}>`,
       to: vars.customer_email,
       subject: '¡Recibimos tu solicitud en American Rent a Car! 🎉',
-      html: fillTemplate(htmlCliente, vars)
+      html: fillTemplate(htmlCliente, vars),
+      ...(USE_REPLY_TO ? { replyTo: USE_REPLY_TO } : {}),
+      // Asegurar sobre de SMTP correcto
+      envelope: {
+        from: SMTP_USER || EFFECTIVE_FROM_EMAIL,
+        to: vars.customer_email
+      }
     });
     const adminResult = await transporter.sendMail({
-      from: `${FROM_NAME} <${FROM_EMAIL}>`,
+      from: `${FROM_NAME} <${EFFECTIVE_FROM_EMAIL}>`,
       to: ADMIN_EMAIL,
       subject: `Nueva solicitud de cotización - American Rent a Car - ${vars.customer_full_name}`,
-      html: fillTemplate(htmlAdmin, vars)
+      html: fillTemplate(htmlAdmin, vars),
+      ...(USE_REPLY_TO ? { replyTo: USE_REPLY_TO } : {}),
+      envelope: {
+        from: SMTP_USER || EFFECTIVE_FROM_EMAIL,
+        to: ADMIN_EMAIL
+      }
     });
     // Intentar WhatsApp (Twilio) al admin si hay configuración
     let twilioInfo = { skipped: true };
@@ -323,6 +348,14 @@ export default async function handler(req, res) {
     }
   } catch (e) {
     console.error('Error en send-reserva:', e);
-    res.status(500).json({error: e.message, stack: e.stack});
+    res.status(500).json({
+      error: e.message,
+      stack: e.stack,
+      smtp: {
+        code: e.code,
+        response: e.response,
+        command: e.command
+      }
+    });
   }
 }

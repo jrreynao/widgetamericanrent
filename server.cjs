@@ -2,6 +2,7 @@
 
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 // Cargar el handler ESM de forma perezosa con import() dentro del middleware
 let handlerPromise = null;
 async function getHandler() {
@@ -14,6 +15,14 @@ async function getHandler() {
 const app = express();
 app.use(cors());
 app.use(express.json());
+// Serve email templates under /api/email_templates from both public/ and src/email_templates if present
+const templatesDirs = [
+  path.join(__dirname, 'public', 'email_templates'),
+  path.join(__dirname, 'src', 'email_templates')
+];
+templatesDirs.forEach(dir => {
+  app.use('/api/email_templates', express.static(dir, { fallthrough: true }));
+});
 
 // Raíz de estado
 app.get('/', (req, res) => {

@@ -14,7 +14,7 @@ import { vehiculos } from "./data/vehiculos";
 import { extras as allExtras } from "./data/extras";
 import "./App.css";
 
-function App() {
+function App({ apiBase }) {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({ fechas: {}, vehiculo: {}, extras: [], datos: {} });
 
@@ -73,9 +73,9 @@ function App() {
     try {
       // Cargar plantillas desde public/email_templates
       const [plantillaCliente, plantillaAdmin] = await Promise.all([
-        loadEmailTemplate("correo_cliente.html"),
-        loadEmailTemplate("correo_admin.html")
-      ]);
+            loadEmailTemplate("correo_cliente.html", apiBase || import.meta.env?.VITE_API_BASE),
+            loadEmailTemplate("correo_admin.html", apiBase || import.meta.env?.VITE_API_BASE)
+          ]);
 
   // Reemplazo de variables: dejar que el backend complete datos dinámicos
   // No reemplazar: booking_id, appointment_duration, appointment_amount, teléfonos, WhatsApp,
@@ -127,8 +127,8 @@ function App() {
       // No reemplazar %tarjeta_credito% en el admin, lo hace el backend
       const htmlAdmin = replaceVars(plantillaAdmin, vars, [...SKIP_COMMON, 'tarjeta_credito']);
 
-  // Endpoint: usa VITE_API_BASE si está definido; si no, intenta /api y luego /backend
-  const bases = [import.meta.env?.VITE_API_BASE, "/api", "/backend"].filter(Boolean);
+  // Endpoint: prioridad a apiBase del custom element; luego VITE_API_BASE; luego /api
+  const bases = [apiBase, import.meta.env?.VITE_API_BASE, "/api"].filter(Boolean);
       let res;
       let lastErr;
       for (const base of bases) {

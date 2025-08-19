@@ -66,7 +66,13 @@ class RentacarWidget extends HTMLElement {
     const mountPoint = document.createElement("div");
     mountPoint.id = 'wr';
     this.shadow.appendChild(mountPoint);
-    ReactDOM.createRoot(mountPoint).render(<App />);
+    // Permitir configurar el API en tiempo de ejecución vía atributo
+    const apiBaseAttr = this.getAttribute('api-base')
+      || this.getAttribute('api')
+      || this.getAttribute('data-api')
+      || this.getAttribute('backend')
+      || this.getAttribute('data-backend');
+    ReactDOM.createRoot(mountPoint).render(<App apiBase={apiBaseAttr || undefined} />);
 
     // Runtime guard: ensure any primary button text stays white even if host injects styles
     const enforcePrimaryWhite = () => {
