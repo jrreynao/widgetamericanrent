@@ -98,6 +98,43 @@ app.get('/api/smtp-verify', async (req, res) => {
   }
 });
 
+// Envío SMTP de prueba (requiere clave)
+app.post('/api/smtp-send-test', async (req, res) => {
+  try {
+    const key = (req.query.key || req.body?.key || '').toString();
+    const expected = process.env.SMTP_TEST_KEY || '';
+    if (!expected || key !== expected) {
+      return res.status(403).json({ ok: false, error: 'forbidden' });
+    }
+    const smtpPort = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 465;
+    const smtpSecure = typeof process.env.SMTP_SECURE !== 'undefined'
+      ? /^(1|true|yes)$/i.test(String(process.env.SMTP_SECURE))
+      : smtpPort === 465;
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'mail.americanrentacar.ar',
+      port: smtpPort,
+      secure: smtpSecure,
+      name: process.env.SMTP_NAME || 'americanrentacar.ar',
+      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+      requireTLS: !smtpSecure,
+      tls: { rejectUnauthorized: false }
+    });
+    const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@americanrentacar.ar';
+    const FROM = (process.env.SMTP_USER || process.env.MAIL_FROM || ADMIN_EMAIL);
+    const info = await transporter.sendMail({
+      from: `Test <${FROM}>`,
+      sender: FROM,
+      to: ADMIN_EMAIL,
+      subject: 'SMTP test',
+      text: 'Test message from /api/smtp-send-test',
+      envelope: { from: process.env.SMTP_USER || FROM, to: ADMIN_EMAIL }
+    });
+    res.json({ ok: true, messageId: info.messageId, accepted: info.accepted, rejected: info.rejected, response: info.response });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message, code: e.code, response: e.response, command: e.command });
+  }
+});
+
 // Manejo básico de errores
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
